@@ -1,0 +1,47 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <h1>Registrarse</h1>
+  </div>
+  {% with messages = get_flashed_messages() %} {% if messages %}
+  <div class="alert alert-danger" role="alert">
+    {{ messages[0] }}.
+    <a href="/login/">Iniciar sesión</a>.
+  </div>
+  {% endif %} {% endwith %}
+  <form action="/signup/" method="POST">
+    <div class="form-group">
+      <label for="email">Correo electronico</label>
+      <input
+        type="email"
+        class="form-control"
+        id="email"
+        aria-describedby="emailHelp"
+        placeholder="correo@example.com"
+        name="email"
+      />
+    </div>
+    <div class="form-group">
+      <label for="name">Nombre</label>
+      <input
+        type="text"
+        class="form-control"
+        id="name"
+        name="name"
+        placeholder="Nombre"
+      />
+    </div>
+    <div class="form-group">
+      <label for="pass">Contraseña</label>
+      <input
+        type="password"
+        class="form-control"
+        name="password"
+        id="pass"
+        placeholder="Contraseña"
+      />
+    </div>
+    <button type="submit" class="btn btn-primary">Registrarse</button>
+  </form>
+</div>
+{% endblock content %}

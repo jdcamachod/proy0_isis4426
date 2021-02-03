@@ -1,0 +1,60 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  <h1 class="my-4">Información del evento</h1>
+  <table class="table">
+    <tbody>
+      <tr>
+        <td><span>Nombre del evento</span></td>
+        <td class="text-right">{{ event.name }}</td>
+      </tr>
+      <tr>
+        <td><span>Categoria</span></td>
+        <td class="text-right">{{event.category}}</td>
+      </tr>
+      <tr>
+        <td><span>Lugar</span></td>
+        <td class="text-right">{{event.place}}</td>
+      </tr>
+      <tr>
+        <td><span>Dirección</span></td>
+        <td class="text-right">{{event.address}}</td>
+      </tr>
+      <tr>
+        <td><span>Fecha de inicio</span></td>
+        <td class="text-right">{{event.start_date}}</td>
+      </tr>
+      <tr>
+        <td><span>Fecha de finalización</span></td>
+        <td class="text-right">{{event.end_date}}</td>
+      </tr>
+      <tr>
+        <td><span>Tipo</span></td>
+        {% if event.type%}
+        <td class="text-right">Virtual</td>
+        {% else %}
+        <td class="text-right">Presencial</td>
+        {% endif %}
+      </tr>
+      <tr>
+        <td>
+          <a class="btn btn-dark" href="/events/" role="button">Regresar</a>
+        </td>
+        <td class="text-right">
+          <a
+            class="btn btn-success"
+            href="/events/{{event.id}}/update/"
+            role="button"
+            >Actualizar</a
+          >
+          <a
+            class="btn btn-danger"
+            href="/events/{{event.id}}/delete/"
+            role="button"
+            >Borrar</a
+          >
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock content %}

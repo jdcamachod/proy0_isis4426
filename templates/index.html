@@ -1,0 +1,43 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  <h1 class="my-4">Mis eventos</h1>
+  {% if events|length < 1 %}
+  <p>No hay eventos en la lista.</p>
+  {% else %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Evento</th>
+        <th>Fecha de inicio</th>
+        <th>Lugar</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for event in events %}
+      <tr>
+        <td>{{ event.name }}</td>
+        <td>{{ event.start_date.date() }}</td>
+        <td>{{event.place}}</td>
+
+        <td class="text-right">
+          <a class="btn btn-success" href="/events/{{event.id}}/" role="button"
+            >Ver</a
+          >
+          <a
+            class="btn btn-danger"
+            href="/events/{{event.id}}/delete/"
+            role="button"
+            >Borrar</a
+          >
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+  <a class="btn btn-primary" href="/events/create/" role="button"
+    >Crear evento</a
+  >
+</div>
+{% endblock content %}

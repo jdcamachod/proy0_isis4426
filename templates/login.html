@@ -1,0 +1,40 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <h1>Iniciar sesión</h1>
+  </div>
+  {% with messages = get_flashed_messages() %} {% if messages %}
+  <div class="alert alert-danger" role="alert">{{ messages[0] }}</div>
+  {% endif %} {% endwith %}
+  <form action="/login/" method="POST">
+    <div class="form-group">
+      <label for="email">Correo electronico</label>
+      <input
+        type="email"
+        class="form-control"
+        id="email"
+        aria-describedby="emailHelp"
+        placeholder="correo@example.com"
+        name="email"
+      />
+    </div>
+    <div class="form-group">
+      <label for="pass">Contraseña</label>
+      <input
+        type="password"
+        class="form-control"
+        name="password"
+        id="pass"
+        placeholder="Contraseña"
+      />
+    </div>
+    <div class="form-check">
+      <input type="checkbox" class="form-check-input" id="exampleCheck1" />
+      <label class="form-check-label" for="exampleCheck1" name="remember"
+        >Recordarme</label
+      >
+    </div>
+    <button type="submit" class="btn btn-primary">Ingresar</button>
+  </form>
+</div>
+{% endblock content %}
