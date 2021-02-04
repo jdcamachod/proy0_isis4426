@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, flash
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import desc
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, LoginManager, login_user, login_required, current_user, logout_user
@@ -31,7 +32,7 @@ class ResourceEvents(Resource):
     @login_required
     def get(self):
         events = Event.query.filter_by(
-            owner_id=current_user.id).order_by(Event.created_at).all()
+            owner_id=current_user.id).order_by(desc(Event.created_at)).all()
         return events_schema.dump(events)
 api.add_resource(ResourceEvents, '/api/events')
 
@@ -178,7 +179,7 @@ class User(UserMixin, db.Model):
 @login_required
 def index():
     events = Event.query.filter_by(
-        owner_id=current_user.id).order_by(Event.created_at).all()
+        owner_id=current_user.id).order_by(desc(Event.created_at)).all()
     return render_template('index.html', events=events)
 
 
