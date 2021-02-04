@@ -3,20 +3,140 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, LoginManager, login_user, login_required, current_user, logout_user
+from flask_restful import Api, Resource
+from flask_marshmallow import Marshmallow
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 app.config['SECRET_KEY'] = 'secret-key-goes-here'
 db = SQLAlchemy(app)
+ma = Marshmallow(app)
+api = Api(app)
 login_manager = LoginManager()
 login_manager.login_view = 'login'
 login_manager.init_app(app)
 CATEGORIES = ["Conferencia", "Seminario", "Congreso", "Curso"]
+class Event_Schema(ma.Schema):
+    class Meta:
+        fields = ("id", "name", "category", "place", "address", "start_date",
+                  "end_date", "type", "created_at", "owner_id")
+class User_Schema(ma.Schema):
+    class Meta:
+        fields = ("id", "email", "password", "name", "api_key")
+user_schema = User_Schema()
+event_schema = Event_Schema()
+events_schema = Event_Schema(many=True)
+
+class ResourceEvents(Resource):
+    @login_required
+    def get(self):
+        events = Event.query.filter_by(
+            owner_id=current_user.id).order_by(Event.created_at).all()
+        return events_schema.dump(events)
+api.add_resource(ResourceEvents, '/api/events')
+
+class ResourceCreateEvent(Resource):
+    @login_required
+    def post(self):
+        new_event = Event(name=request.json['name'], category=request.json['category'],
+                          place=request.json['place'], address=request.json['address'],
+                          start_date=request.json['start_date'], end_date=request.json['end_date'],
+                          type=request.json['type'], owner_id=current_user.id)
+        db.session.add(new_event)
+        db.session.commit()
+        return event_schema.dump(new_event)
+
+api.add_resource(ResourceCreateEvent, '/api/events/create')
+
+class ResourceEvent(Resource):
+    @login_required
+    def get(self, id):
+        event = Event.query.get_or_404(id)
+        if current_user.id == event.owner_id:
+            return event_schema.dump(event)
+        else:
+            return '', 401
+    @login_required
+    def put(self, id):
+        event = Event.query.get_or_404(id)
+        if current_user.id == event.owner_id:
+            if 'name' in request.json:
+                event.name = request.json['name']
+            if 'category' in request.json:
+                event.category = request.json['category']
+            if 'place' in request.json:
+                event.place = request.json['place']
+            if 'address' in request.json:
+                event.address = request.json['address']
+            if 'start_date' in request.json:
+                event.start_date = request.json['start_date']
+            if 'end_date' in request.json:
+                event.end_date = request.json['end_date']
+            if 'type' in request.json:
+                event.type = request.json['type']
+            db.session.commit()
+            return event_schema.dump(event)
+        else:
+            return '', 401
+
+
+    @login_required
+    def delete(self, id):
+        event = Event.query.get_or_404(id)
+        if event.owner_id == current_user.id:
+            db.session.delete(event)
+            db.session.commit()
+            return '', 204
+        else:
+            return '', 401
+
+
+
+api.add_resource(ResourceEvent, '/api/events/<int:id>')
+
+class ResourceLogin(Resource):
+    def post(self):
+        email = request.json['email']
+        password = request.json['password']
+        user = User.query.filter_by(email=email).first()
+        print(email)
+        if not user or not check_password_hash(user.password, password):
+            return ''
+        login_user(user)
+        return user_schema.dump(user)
+
+api.add_resource(ResourceLogin, '/api/login')
+
+class ResourceLogout(Resource):
+    def get(self):
+        logout_user()
+        return '', 200
+api.add_resource(ResourceLogout, '/api/logout')
+
+class ResourceSignUp(Resource):
+    def post(self):
+        email = request.json['email']
+        name = request.json['name']
+        password = request.json['password']
+
+        user = User.query.filter_by(email=email).first()
+        if user:
+            return {"error": "Usuario registrado"}
+        new_user = User(email=email, name=name, password=generate_password_hash(
+            password, method='sha256'))
+        db.session.add(new_user)
+        db.session.commit()
+        return user_schema.dump(new_user)
+
+api.add_resource(ResourceSignUp, '/api/signup')
+
+
 
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
 
 
 class Event(db.Model):
@@ -37,6 +157,7 @@ class Event(db.Model):
         return '<Event %r>' % self.name
 
 
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True)
@@ -46,6 +167,7 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.name
+
 
 
 @app.route('/events/')
@@ -166,6 +288,8 @@ def login():
         login_user(user, remember=remember)
         return redirect('/events/')
     return render_template('login.html')
+
+
 
 
 @app.route('/signup/', methods=['GET', 'POST'])
