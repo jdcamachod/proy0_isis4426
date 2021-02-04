@@ -38,9 +38,13 @@ api.add_resource(ResourceEvents, '/api/events')
 class ResourceCreateEvent(Resource):
     @login_required
     def post(self):
+        start_date = request.json['start_date']
+        end_date = request.json['end_date']
+        start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M')
+        end_date = datetime.strptime(end_date, '%Y-%m-%dT%H:%M')
         new_event = Event(name=request.json['name'], category=request.json['category'],
                           place=request.json['place'], address=request.json['address'],
-                          start_date=request.json['start_date'], end_date=request.json['end_date'],
+                          start_date=start_date, end_date=end_date,
                           type=request.json['type'], owner_id=current_user.id)
         db.session.add(new_event)
         db.session.commit()
